@@ -1,0 +1,7 @@
+sudo dscl . -create /Users/exampleuser
+sudo dscl . -create /Users/exampleuser UserShell /bin/bash
+sudo dscl . -create /Users/exampleuser RealName "Example User"
+sudo dscl . -create /Users/exampleuser UniqueID 1001
+sudo dscl . -create /Users/exampleuser PrimaryGroupID 1000
+sudo dscl . -create /Users/exampleuser NFSHomeDirectory /Users/exampleuser
+sudo dscl . -passwd /Users/exampleuser YourPasswordHere
