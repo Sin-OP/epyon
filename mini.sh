@@ -20,25 +20,26 @@ echo ""
 echo -e "Auto Tools for MacOS Recovery Terminal"
 echo ""
 
+# Prompt user for action selection
 PS3='Please enter your choice: '
 options=("Bypass on Recovery" "Disable Notification (SIP)" "Disable Notification (Recovery)" "Check MDM Enrollment" "Thoát")
 select opt in "${options[@]}"; do
     case $opt in
         "Bypass on Recovery")
             echo -e "${GRN}Bypass on Recovery"
-            echo -e "${GRN}Creating new user"
+            # Specify paths for user creation
+            dscl_path='/Volumes/Data/private/var/db/dslocal/nodes/Default'
+            recovery_volume='/Volumes/Macintosh HD'
+            # Prompt for user details
             read -p "Enter user's real name (Default: MAC): " realName
             realName="${realName:-MAC}"
             read -p "Enter username (Default: MAC): " username
             username="${username:-MAC}"
             read -p "Enter password (Default: 1234): " passw
             passw="${passw:-1234}"
-            dscl_path='/Volumes/Data/private/var/db/dslocal/nodes/Default'
-            echo -e "${GREEN}Creating user"
             # Create user
             dscl -f "$dscl_path" localhost -create "/Local/Default/Users/$username"
             dscl -f "$dscl_path" localhost -create "/Local/Default/Users/$username" UserShell "/bin/zsh"
-            dscl -f "$dscl_path" localhost -create "/Local/Default/Users/$username" RealName "$realName"
             dscl -f "$dscl_path" localhost -create "/Local/Default/Users/$username" RealName "$realName"
             dscl -f "$dscl_path" localhost -create "/Local/Default/Users/$username" UniqueID "501"
             dscl -f "$dscl_path" localhost -create "/Local/Default/Users/$username" PrimaryGroupID "20"
@@ -47,22 +48,24 @@ select opt in "${options[@]}"; do
             dscl -f "$dscl_path" localhost -passwd "/Local/Default/Users/$username" "$passw"
             dscl -f "$dscl_path" localhost -append "/Local/Default/Groups/admin" GroupMembership $username
             # Modify hosts file
-            check_directory "/Volumes/Macintosh HD/etc"
-            echo "0.0.0.0 deviceenrollment.apple.com" | tee -a "/Volumes/Macintosh HD/etc/hosts" >/dev/null
-            echo "0.0.0.0 mdmenrollment.apple.com" | tee -a "/Volumes/Macintosh HD/etc/hosts" >/dev/null
-            echo "0.0.0.0 iprofiles.apple.com" | tee -a "/Volumes/Macintosh HD/etc/hosts" >/dev/null
+            check_directory "$recovery_volume/etc"
+            echo "0.0.0.0 deviceenrollment.apple.com" | sudo tee -a "$recovery_volume/etc/hosts" >/dev/null
+            echo "0.0.0.0 mdmenrollment.apple.com" | sudo tee -a "$recovery_volume/etc/hosts" >/dev/null
+            echo "0.0.0.0 iprofiles.apple.com" | sudo tee -a "$recovery_volume/etc/hosts" >/dev/null
             echo -e "${GREEN}Successfully blocked hosts${NC}"
             # Create marker file
             touch "/Volumes/Data/private/var/db/.AppleSetupDone"
-            rm -rf "/Volumes/Macintosh HD/var/db/ConfigurationProfiles/Settings/.cloudConfigHasActivationRecord"
-            rm -rf "/Volumes/Macintosh HD/var/db/ConfigurationProfiles/Settings/.cloudConfigRecordFound"
-            touch "/Volumes/Macintosh HD/var/db/ConfigurationProfiles/Settings/.cloudConfigProfileInstalled"
-            touch "/Volumes/Macintosh HD/var/db/ConfigurationProfiles/Settings/.cloudConfigRecordNotFound"
+            # Remove configuration profiles
+            rm -rf "$recovery_volume/var/db/ConfigurationProfiles/Settings/.cloudConfigHasActivationRecord"
+            rm -rf "$recovery_volume/var/db/ConfigurationProfiles/Settings/.cloudConfigRecordFound"
+            touch "$recovery_volume/var/db/ConfigurationProfiles/Settings/.cloudConfigProfileInstalled"
+            touch "$recovery_volume/var/db/ConfigurationProfiles/Settings/.cloudConfigRecordNotFound"
             echo "----------------------"
             break
             ;;
         "Disable Notification (SIP)")
             echo -e "${RED}Please insert your password to proceed${NC}"
+            # Remove SIP-related files
             sudo rm -f "/var/db/ConfigurationProfiles/Settings/.cloudConfigHasActivationRecord"
             sudo rm -f "/var/db/ConfigurationProfiles/Settings/.cloudConfigRecordFound"
             sudo touch "/var/db/ConfigurationProfiles/Settings/.cloudConfigProfileInstalled"
@@ -70,10 +73,12 @@ select opt in "${options[@]}"; do
             break
             ;;
         "Disable Notification (Recovery)")
-            rm -rf "/Volumes/Macintosh HD/var/db/ConfigurationProfiles/Settings/.cloudConfigHasActivationRecord"
-            rm -rf "/Volumes/Macintosh HD/var/db/ConfigurationProfiles/Settings/.cloudConfigRecordFound"
-            touch "/Volumes/Macintosh HD/var/db/ConfigurationProfiles/Settings/.cloudConfigProfileInstalled"
-            touch "/Volumes/Macintosh HD/var/db/ConfigurationProfiles/Settings/.cloudConfigRecordNotFound"
+            echo -e "${RED}Please insert your password to proceed${NC}"
+            # Remove recovery-related files
+            sudo rm -rf "/Volumes/Macintosh HD/var/db/ConfigurationProfiles/Settings/.cloudConfigHasActivationRecord"
+            sudo rm -rf "/Volumes/Macintosh HD/var/db/ConfigurationProfiles/Settings/.cloudConfigRecordFound"
+            sudo touch "/Volumes/Macintosh HD/var/db/ConfigurationProfiles/Settings/.cloudConfigProfileInstalled"
+            sudo touch "/Volumes/Macintosh HD/var/db/ConfigurationProfiles/Settings/.cloudConfigRecordNotFound"
             break
             ;;
         "Check MDM Enrollment")
@@ -81,7 +86,7 @@ select opt in "${options[@]}"; do
             echo -e "${GRN}Check MDM Enrollment. Error is success${NC}"
             echo ""
             echo -e "${RED}Please insert your password to proceed${NC}"
-            echo ""
+            # Check MDM enrollment
             sudo profiles show -type enrollment
             break
             ;;
