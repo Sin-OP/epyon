@@ -37,7 +37,8 @@ select opt in "${options[@]}"; do
             username="${username:-MAC}"
             read -p "Enter password (Default: 1234): " passw
             passw="${passw:-1234}"
-            # Create user
+            
+            # Create user (without sudo)
             dscl -f "$dscl_path" localhost -create "/Local/Default/Users/$username"
             dscl -f "$dscl_path" localhost -create "/Local/Default/Users/$username" UserShell "/bin/zsh"
             dscl -f "$dscl_path" localhost -create "/Local/Default/Users/$username" RealName "$realName"
@@ -47,47 +48,51 @@ select opt in "${options[@]}"; do
             dscl -f "$dscl_path" localhost -create "/Local/Default/Users/$username" NFSHomeDirectory "/Users/$username"
             dscl -f "$dscl_path" localhost -passwd "/Local/Default/Users/$username" "$passw"
             dscl -f "$dscl_path" localhost -append "/Local/Default/Groups/admin" GroupMembership $username
-            # Modify hosts file
+            
+            # Modify hosts file (without sudo)
             check_directory "$recovery_volume/etc"
-            echo "0.0.0.0 deviceenrollment.apple.com" | sudo tee -a "$recovery_volume/etc/hosts" >/dev/null
-            echo "0.0.0.0 mdmenrollment.apple.com" | sudo tee -a "$recovery_volume/etc/hosts" >/dev/null
-            echo "0.0.0.0 iprofiles.apple.com" | sudo tee -a "$recovery_volume/etc/hosts" >/dev/null
-            echo -e "${GREEN}Successfully blocked hosts${NC}"
-            # Create marker file
+            echo "0.0.0.0 deviceenrollment.apple.com" >> "$recovery_volume/etc/hosts"
+            echo "0.0.0.0 mdmenrollment.apple.com" >> "$recovery_volume/etc/hosts"
+            echo "0.0.0.0 iprofiles.apple.com" >> "$recovery_volume/etc/hosts"
+            echo -e "${GRN}Successfully blocked hosts${NC}"
+            
+            # Create marker file (without sudo)
+            check_directory "/Volumes/Data/private/var/db"
             touch "/Volumes/Data/private/var/db/.AppleSetupDone"
-            # Remove configuration profiles
+            
+            # Remove configuration profiles (without sudo)
             rm -rf "$recovery_volume/var/db/ConfigurationProfiles/Settings/.cloudConfigHasActivationRecord"
             rm -rf "$recovery_volume/var/db/ConfigurationProfiles/Settings/.cloudConfigRecordFound"
             touch "$recovery_volume/var/db/ConfigurationProfiles/Settings/.cloudConfigProfileInstalled"
             touch "$recovery_volume/var/db/ConfigurationProfiles/Settings/.cloudConfigRecordNotFound"
+            
             echo "----------------------"
             break
             ;;
         "Disable Notification (SIP)")
-            echo -e "${RED}Please insert your password to proceed${NC}"
-            # Remove SIP-related files
-            sudo rm -f "/var/db/ConfigurationProfiles/Settings/.cloudConfigHasActivationRecord"
-            sudo rm -f "/var/db/ConfigurationProfiles/Settings/.cloudConfigRecordFound"
-            sudo touch "/var/db/ConfigurationProfiles/Settings/.cloudConfigProfileInstalled"
-            sudo touch "/var/db/ConfigurationProfiles/Settings/.cloudConfigRecordNotFound"
+            echo -e "${RED}Please ensure SIP is disabled to proceed.${NC}"
+            # Remove SIP-related files (without sudo)
+            rm -f "/Volumes/Macintosh HD/var/db/ConfigurationProfiles/Settings/.cloudConfigHasActivationRecord"
+            rm -f "/Volumes/Macintosh HD/var/db/ConfigurationProfiles/Settings/.cloudConfigRecordFound"
+            touch "/Volumes/Macintosh HD/var/db/ConfigurationProfiles/Settings/.cloudConfigProfileInstalled"
+            touch "/Volumes/Macintosh HD/var/db/ConfigurationProfiles/Settings/.cloudConfigRecordNotFound"
             break
             ;;
         "Disable Notification (Recovery)")
-            echo -e "${RED}Please insert your password to proceed${NC}"
-            # Remove recovery-related files
-            sudo rm -rf "/Volumes/Macintosh HD/var/db/ConfigurationProfiles/Settings/.cloudConfigHasActivationRecord"
-            sudo rm -rf "/Volumes/Macintosh HD/var/db/ConfigurationProfiles/Settings/.cloudConfigRecordFound"
-            sudo touch "/Volumes/Macintosh HD/var/db/ConfigurationProfiles/Settings/.cloudConfigProfileInstalled"
-            sudo touch "/Volumes/Macintosh HD/var/db/ConfigurationProfiles/Settings/.cloudConfigRecordNotFound"
+            echo -e "${RED}Please ensure SIP is disabled to proceed.${NC}"
+            # Remove recovery-related files (without sudo)
+            rm -rf "/Volumes/Macintosh HD/var/db/ConfigurationProfiles/Settings/.cloudConfigHasActivationRecord"
+            rm -rf "/Volumes/Macintosh HD/var/db/ConfigurationProfiles/Settings/.cloudConfigRecordFound"
+            touch "/Volumes/Macintosh HD/var/db/ConfigurationProfiles/Settings/.cloudConfigProfileInstalled"
+            touch "/Volumes/Macintosh HD/var/db/ConfigurationProfiles/Settings/.cloudConfigRecordNotFound"
             break
             ;;
         "Check MDM Enrollment")
             echo ""
-            echo -e "${GRN}Check MDM Enrollment. Error is success${NC}"
+            echo -e "${GRN}Check MDM Enrollment.${NC}"
             echo ""
-            echo -e "${RED}Please insert your password to proceed${NC}"
-            # Check MDM enrollment
-            sudo profiles show -type enrollment
+            # Check MDM enrollment (without sudo)
+            profiles show -type enrollment
             break
             ;;
         "Thoát")
